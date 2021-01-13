@@ -1,0 +1,9 @@
+{
+    "db": {
+        "user": "admin",
+        "password": "password" ,
+        "host": "localhost",
+        "dbname": "WorldRowing",
+        "driver": "SQL+Server+Native+Client+11.0"
+    }
+}

@@ -1,0 +1,4 @@
+*.cpython-36.pyc
+*.pyc
+connection.json
+API Notes.txt
