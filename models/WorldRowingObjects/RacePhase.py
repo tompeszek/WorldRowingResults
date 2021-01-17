@@ -12,3 +12,8 @@ class RacePhase(Base):
 	# Don't know how to figure out what this object is or how to get it??
 
 	Races = relationship("Race", back_populates="RacePhase")
+
+	def __init__(self, id, Description):
+		self.id = id
+		self.Description = Description
+		super(RacePhase, self).__init__()

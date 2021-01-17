@@ -31,3 +31,22 @@ class Race(Base):
 	RacePhase = relationship("RacePhase", back_populates="Races")
 	RaceStatus = relationship("RaceStatus", back_populates="Races")
 	Gender = relationship("Gender", back_populates="Races")
+
+	def __init__(self, id, eventId, racePhaseId, raceStatusId, genderId, RscCode, DisplayName, RaceNr, IsStarted, Date, DateString, Progression, raceBoats):
+		self.id = id
+		self.eventId = eventId
+		self.racePhaseId = racePhaseId
+		self.raceStatusId = raceStatusId
+		self.genderId = genderId
+		self.RscCode = RscCode
+		self.DisplayName = DisplayName
+		self.RaceNr = RaceNr
+		self.IsStarted = IsStarted
+		self.Date = Date
+		self.DateString = DateString
+		self.Progression = Progression
+		self.RaceBoats = raceBoats
+		super(Race, self).__init__()
+
+	def __repr__(self):
+		return "<Race(DisplayName='%s')>" % (self.DisplayName)

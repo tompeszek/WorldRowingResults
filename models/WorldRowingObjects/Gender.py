@@ -8,6 +8,11 @@ class Gender(Base):
 
 	id = Column(String(255), primary_key=True)
 	Description = Column(String(255))
+
+	def __init__(self, id, Description):
+		self.id = id
+		self.Description = Description
+		super(Gender, self).__init__()
 	
 	# Don't know how to figure out what this object is or how to get it??
 
