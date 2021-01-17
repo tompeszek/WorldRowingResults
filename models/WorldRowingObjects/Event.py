@@ -31,15 +31,3 @@ class Event(Base):
 
 	# event has multiple races
 	Races = relationship("Race", back_populates="Event")
-
-	# def populateRaces(self):
-	# 	filters = [
-	# 		{'object': 'event.id', 'target': self.id}
-	# 	]
-	# 	includes = [
-	# 		'racePhase', 'raceBoats.raceBoatAthletes.person'
-	# 	]
-	# 	data = WRClient.getData(Race.endpoint, filters=filters, includes=includes)
-	# 	for race in data:
-
-	# 	return(data)

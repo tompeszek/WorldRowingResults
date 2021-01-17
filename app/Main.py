@@ -118,7 +118,7 @@ if __name__ == '__main__':
 		allData = json.loads(requests.get(url).content)['data']
 		Races = json.loads(json.dumps(allData), object_hook=class_mapper)
 
-		### want to do this but having trouble with foreign key constraints... like it's not uploading them all in once transaction? or maybe my models are incomplete
+		### want to do this but having trouble with foreign/primary key constraints... like it's not uploading them all in once transaction? or maybe my models are incomplete
 		print(Races)
-		db_session.add_all(Races)
+		db_session.merge(Races)
 		db_session.commit()
