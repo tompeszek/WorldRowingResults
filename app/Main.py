@@ -12,10 +12,33 @@ from models.WorldRowingObjects.Country import Country
 from models.WorldRowingObjects.RaceStatus import RaceStatus
 from models.WorldRowingObjects.RacePhase import RacePhase
 from models.WorldRowingObjects.Gender import Gender
+from models.WorldRowingObjects.Venue import Venue
+from models.WorldRowingObjects.PersonPhoto import PersonPhoto
+from models.WorldRowingObjects.PersonType import PersonType
+from models.WorldRowingObjects.CompetitionType import CompetitionType
+from models.WorldRowingObjects.CompetitionCategory import CompetitionCategory
+from models.WorldRowingObjects.PdfURL import PdfURL
 from models.Base import Base
+
+from models.WorldRowingObjects.PersonTypeAssociation import PersonTypeAssociation
+from models.WorldRowingObjects.CompetitionTypeCompetitionCategoryAssociation import CompetitionTypeCompetitionCategoryAssociation
+from models.WorldRowingObjects.CompetitionPdfURLAssociation import CompetitionPdfURLAssociation
+from models.WorldRowingObjects.RacePdfURLAssociation import RacePdfURLAssociation
+
 import WRClient
 import json
 import requests
+
+
+### TODO:
+# api endpoint: countryMedal
+# from race endpoint: event.competition.competitionType.competitionCategory
+# from competition endpoint: include pdfUrls,events.pdfUrls,events.races.pdfUrls,events.boatClass
+# from competition endpoint: include: "competitionType,competitionType.competitionCategory,venue,venue.country",
+# from person endpoint: include: "country,personGender,personPhoto,personTypes",
+# from race endpoing: include=raceStatus,racePhase
+
+
 
 ####### Rough hierarcy of world rowing objects with example #######
 
@@ -33,92 +56,69 @@ import requests
 ####### Country (USA)
 ####### Gender (Male)
 
-getEventsAndComps = True
-
-def class_mapper(d):
-    for keys, cls in mapping.items():
-        if keys.issuperset(d.keys()):
-            return cls(**d)
-    else:
-        # Raise exception instead of silently returning None
-        raise ValueError('Unable to find a matching class for object: {!s}'.format(d))
-
-def setupDefaults(db_session):
-	racePhases = [
-		RacePhase('0959f5e8-f85a-40fb-93ab-b6c477f6aade', 'Repechage'),
-		RacePhase('e0fc3320-cd66-43af-a5b5-97afd55b2971', 'Final'),
-		RacePhase('e6693585-d2cf-464c-9f8e-b2e531b26400', 'Semifinal'),
-		RacePhase('cd3d5ca1-5aed-4146-b39b-a192ae6533f1', 'Heat')
-	]
-	
-	raceStatuses = [
-		RaceStatus('182f6f15-8e78-41c3-95b3-8b006af2c6a1', 'Complete')
-	]
-
-	genders = [
-		Gender('95b62e87-cd87-4df4-b566-6f3a64e4d366', 'Male'),
-		Gender('5beae5a3-10e4-4d33-96e5-c1a9f612dd54', 'Female')
-	]
-
-	db_session.add_all(racePhases + raceStatuses + genders)
-	db_session.commit()
+resetDatabase = True
 
 if __name__ == '__main__':
-	
-	if getEventsAndComps:
+	print("Starting...")
+	if resetDatabase:
 
 		# recreate database
 		Base.metadata.drop_all(engine)
 		Base.metadata.create_all(engine)
 
-		# not sure how to get phases/statuses/genders from api, so creating these manually
-		setupDefaults(db_session)
+		# get competitions
+		filters = []
+		includes = [
+			'pdfUrls', 'competitionType', 'competitionType.competitionCategory', 'venue', 'venue.country'
+		]
+		allCompetitions = WRClient.getMapped(Competition.endpoint, filters, includes)
 
-		# api makes it easy to get all competitions and all events, so we do that here
-		existingCompetitions = Competition.query.all()
-		existingEvents = Event.query.all()
-
-		allCompetitions = WRClient.getGeneric(Competition)
-		addCompeititons = [x for x in allCompetitions if x.id not in [y.id for y in existingCompetitions]]
-
-		allEvents = WRClient.getGeneric(Event)
-		addEvents = [x for x in allEvents if x.id not in [y.id for y in existingEvents]]
+		# get events
+		includes = [
+			# 'pdfUrls',
+			# 'races.pdfUrls',
+			'boatClass' #pdfs don't seem to actually come through
+		]
+		allEvents = WRClient.getMapped(Event.endpoint, filters, includes)
 
 		# commit events/competitions that we don't already have in database
-		db_session.add_all(addCompeititons)
-		db_session.add_all(addEvents)
-		db_session.commit()
+		print("Merging data to database")
+		for competition in allCompetitions:
+			db_session.merge(competition)
+			db_session.commit()
+		for event in allEvents:
+			db_session.merge(event)
+			db_session.commit()
 
 	# get all events in database
 	existingEvents = Event.query.all()
+	existingCompetitions = Competition.query.all()
 
-	# set mapping so that json.loads can create objects. mapping determines which object based on keys that appear in json
-	mapping = {
-		frozenset(('id', 'competitionId', 'competitionTypeId', 'boatClassId', 'RscCode', 'DisplayName')): Event,
-		frozenset(('id', 'eventId', 'racePhaseId', 'raceStatusId', 'genderId', 'RscCode', 'DisplayName', 'RaceNr', 'IsStarted', 'Date', 'DateString', 'Progression', 'raceBoats')): Race,
-		frozenset(('id', 'boatId', 'countryId', 'worldBestTimeId', 'raceId', 'DisplayName', 'Rank', 'Lane', 'WorldCupPoints', 'InvalidMarkResult', 'Remark', 'ResultTime', 'country', 'raceBoatAthletes')): RaceBoat,
-		frozenset(('id', 'Description')): RaceStatus,		
-		frozenset(('raceBoatId', 'personId', 'boatPosition', 'person')): RaceBoatAthlete,
-		frozenset(('id', 'countryId', 'genderId', 'OVRCode', 'DisplayName', 'FirstName', 'LastName', 'BirthDate', 'HeightCm', 'WeightKg', 'country')): Person,
-		frozenset(('id', 'DisplayName', 'CountryCode', 'IsNOC', 'IsFormerCountry')): Country,		
-		frozenset(('id', 'Description')): Gender
-	}
-
-	# for each event, get full results and save to database
-	for event in existingEvents:
+	# for each competition, get full results and save to database
+	## TODO: the includes list should probably be a class attribute for Race
+	for competition in existingCompetitions:
+		print("Adding: " + competition.DisplayName)
 		filters = [
-			{'object': 'event.id', 'target': event.id}
+			{'object': 'event.competition.id', 'target': competition.id}
 		]
 		includes = [
-			'racePhase', 'raceBoats.raceBoatAthletes.person', 'raceBoats.raceBoatAthletes.person.country,raceBoats.country'
+			'gender',
+			'pdfUrls',
+			'racePhase',
+			'raceStatus',
+			'raceBoats.country',
+			'raceBoats.raceBoatAthletes.person.country',
+			'raceBoats.raceBoatAthletes.person.personGender',
+			'raceBoats.raceBoatAthletes.person.personPhoto',
+			'raceBoats.raceBoatAthletes.person.personTypes'
 		]
-		url = WRClient.getURL(Race.endpoint, filters=filters, includes=includes)
+		Races = WRClient.getMapped(Race.endpoint, filters, includes)
 
-		# i don't like this but not sure how else to use only 'data' from api response, and ignore 'meta'
-		allData = json.loads(requests.get(url).content)['data']
-		Races = json.loads(json.dumps(allData), object_hook=class_mapper)
-
-		### want to do this but having trouble with foreign/primary key constraints... like it's not uploading them all in once transaction? or maybe my models are incomplete
-		print(Races)
-		db_session.merge(Races)
-		db_session.commit()
+		# add each race in the event
+		for race in [x for x in Races if x is not None]:
+			try:
+				db_session.merge(race)
+				db_session.commit()
+			except:
+				print("Failed on race.id: " + race.id)
+				raise

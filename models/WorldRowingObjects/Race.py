@@ -10,9 +10,9 @@ class Race(Base):
 
 	id = Column(String(255), primary_key=True)
 	eventId = Column(String(255), ForeignKey('Event.id'))
-	racePhaseId = Column(String(255), ForeignKey('RacePhase.id'))
-	raceStatusId = Column(String(255), ForeignKey('RaceStatus.id'))
-	genderId = Column(String(255), ForeignKey('Gender.id'))
+	racePhaseId = Column(String(255), ForeignKey('RacePhase.racePhaseId'))
+	raceStatusId = Column(String(255), ForeignKey('RaceStatus.raceStatusId'))
+	genderId = Column(String(255), ForeignKey('Gender.genderId'))
 	RscCode = Column(String(255))
 	DisplayName = Column(String(50))
 	RaceNr = Column(String(50))
@@ -31,8 +31,9 @@ class Race(Base):
 	RacePhase = relationship("RacePhase", back_populates="Races")
 	RaceStatus = relationship("RaceStatus", back_populates="Races")
 	Gender = relationship("Gender", back_populates="Races")
+	PdfURLs = relationship("PdfURL", secondary="RacePdfURLAssociation", back_populates="Race")
 
-	def __init__(self, id, eventId, racePhaseId, raceStatusId, genderId, RscCode, DisplayName, RaceNr, IsStarted, Date, DateString, Progression, raceBoats):
+	def __init__(self, id, eventId, racePhaseId, raceStatusId, genderId, RscCode, DisplayName, RaceNr, IsStarted, Date, DateString, Progression, racePhase, raceStatus, pdfUrls, gender, raceBoats = []):
 		self.id = id
 		self.eventId = eventId
 		self.racePhaseId = racePhaseId
@@ -45,7 +46,11 @@ class Race(Base):
 		self.Date = Date
 		self.DateString = DateString
 		self.Progression = Progression
+		self.RacePhase = racePhase
+		self.RaceStatus = raceStatus
 		self.RaceBoats = raceBoats
+		self.PdfURLs = pdfUrls
+		self.Gender = gender
 		super(Race, self).__init__()
 
 	def __repr__(self):

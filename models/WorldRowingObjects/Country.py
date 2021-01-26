@@ -11,7 +11,7 @@ class Country(Base):
 	id = Column(String(255), primary_key=True)
 	DisplayName = Column(String(255))
 	CountryCode = Column(String(50))
-	IsNOC = Column(Integer)
+	IsNOC = Column(Boolean)
 	IsFormerCountry = Column(Boolean)
 
 	def __init__(self, id, DisplayName, CountryCode, IsNOC, IsFormerCountry):
@@ -26,6 +26,7 @@ class Country(Base):
 	Persons = relationship("Person", back_populates="Country")
 	# RaceBoatAthletes = relationship("RaceBoatAthlete", back_populates="Country")
 	RaceBoats = relationship("RaceBoat", back_populates="Country")
+	Venues = relationship("Venue", back_populates="Country")
 
 	def __repr__(self):
 		return "<Country(id='%s', DisplayName='%s')>" % (self.id, self.DisplayName)

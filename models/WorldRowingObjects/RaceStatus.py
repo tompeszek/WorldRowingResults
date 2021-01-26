@@ -6,12 +6,12 @@ from sqlalchemy import ForeignKey
 class RaceStatus(Base):
 	__tablename__ = 'RaceStatus'
 
-	id = Column(String(255), primary_key=True)
-	Description = Column(String(255))
+	raceStatusId = Column(String(255), primary_key=True)
+	DisplayName = Column(String(255))
 
-	def __init__(self, id, Description):
-		self.id = id
-		self.Description = Description
+	def __init__(self, raceStatusId, DisplayName):
+		self.raceStatusId = raceStatusId
+		self.DisplayName = DisplayName
 		super(RaceStatus, self).__init__()
 	
 	# Don't know how to figure out what this object is or how to get it??
@@ -19,4 +19,4 @@ class RaceStatus(Base):
 	Races = relationship("Race", back_populates="RaceStatus")
 
 	def __repr__(self):
-		return "<Race(Description='%s')>" % (self.Description)
+		return "<Race(DisplayName='%s')>" % (self.DisplayName)
