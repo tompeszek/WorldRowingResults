@@ -1,7 +1,7 @@
 <h1 align="center">WorldRowingResults</h1>
 
 <div align="center">
-  <strong>Python project to pull all World Rowing results, since the site is awful</strong>
+  <strong>Python project to pull all World Rowing results, since the official site is an awful mess</strong>
 </div>
 <div align="center">
   Soon to be the data source behind <a href="https://www.rowfacts.com">RowFacts</a>
