@@ -17,3 +17,4 @@
 - __Set up SQL Server (or other db):__ built with SQL Server in mind, but probably can use any db that's supported by SQL Alchemy
 - __Configure connection.json:__ Use connection.example.json as an example and create connection.json in the base directory
 - __Execute Main:__ Maybe someday this will be an actual library, but not today
+- __Use Generic Query to Explore Data:__ Optionally, use the GenericQuery as a basis for querying the resulting database
